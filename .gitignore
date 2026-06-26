@@ -1,0 +1,14 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+
+# NuGet packages (restored via packages.config: `nuget restore` or Visual Studio)
+packages/
+
+# OS / editor
+Thumbs.db
+*.tmp
+*.DS_Store

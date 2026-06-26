@@ -90,7 +90,7 @@ namespace Settings
                 if (txtDname.Text != "" && txtDpath.Text != "")
                 {
                     checkPath();
-                    if (checkOverwrite(txtDpath.Text + txtDname.Text + ".sdf", "Database"))
+                    if (checkOverwrite(txtDpath.Text + txtDname.Text + ".db", "Database"))
                     { database = true; }
                 }
                 else
@@ -186,7 +186,7 @@ namespace Settings
             if(File.Exists(LRP.Default.DBPath))
             {
                 pbCurrent.Value = 50;
-                File.Copy(LRP.Default.DBPath, txtDpath.Text + txtDname.Text + ".sdf",true);
+                File.Copy(LRP.Default.DBPath, txtDpath.Text + txtDname.Text + ".db",true);
                 pbCurrent.Value = 100;
             }
 

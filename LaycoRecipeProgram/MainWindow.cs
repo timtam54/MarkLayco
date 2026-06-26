@@ -80,15 +80,30 @@ namespace LaycpRecipeProgram
             bool setup = LRP.Default.setupDone;
             if (!setup)
             {
-                DialogResult dr = new DialogResult();
-                InitialSetup initalSetup = new InitialSetup();
-                initalSetup.ShowDialog();
-                if (!LRP.Default.setupDone)
-                {
-                    dr = MessageBox.Show("The Layco Blending Program must have be setup. Setup now?", "No Settings", MessageBoxButtons.YesNo);
-                    if (dr == DialogResult.No)
-                    { Environment.Exit(0); }
-                }
+                // --- Setup/login screen bypassed ---
+                // Instead of showing the InitialSetup dialog, auto-provision
+                // sensible defaults so the app opens straight to the main
+                // window. No PLC is required for offline/demo use.
+                LRP.Default.PlcIp = "0.0.0.0";
+                if (LRP.Default.NumHoppers <= 0)
+                { LRP.Default.NumHoppers = 8; }
+                string baseData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Yargus\LRP";
+                LRP.Default.AppData = baseData;
+                LRP.Default.Rlb = baseData + @"\RLB";
+                LRP.Default.LogPath = baseData + @"\LogFile";
+                LRP.Default.ErrorPath = baseData + @"\ErrorFile";
+                LRP.Default.DBPath = baseData + @"\LRP.db";
+                LRP.Default.PrintSettings = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Yargus\BatchTicket.txt";
+                LRP.Default.setupDone = true;
+                LRP.Default.Save();
+
+                if (!Directory.Exists(baseData))
+                { Directory.CreateDirectory(baseData); }
+                if (!Directory.Exists(LRP.Default.Rlb))
+                { Directory.CreateDirectory(LRP.Default.Rlb); }
+                if (!Directory.Exists(baseData + @"\PrintTickets"))
+                { Directory.CreateDirectory(baseData + @"\PrintTickets"); }
+
                 checkSetup();
             }
             else
@@ -749,7 +764,7 @@ namespace LaycpRecipeProgram
             if (Directory.Exists(LRP.Default.AppData + "\\Backup"))
             {
                 DirectoryInfo dirInfo = new DirectoryInfo(LRP.Default.AppData + "\\Backup");
-                FileInfo[] savedDbList = dirInfo.GetFiles("*.sdf");
+                FileInfo[] savedDbList = dirInfo.GetFiles("*.db");
                 if (savedDbList.Count() > 0)
                 { btnViewDbBu.Enabled = true; }
                 else

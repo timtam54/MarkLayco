@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,11 +13,11 @@ namespace Database
     public class Databases
     {
         #region Fields
-        private const string dbName = "LRP.sdf";
+        private const string dbName = "LRP.db";
         private string sqlString;
         string commonAppData;
         private string fullPath;
-        SqlCeConnection conn = new SqlCeConnection();
+        SQLiteConnection conn = new SQLiteConnection();
         // Table creation strings
         protected string createProductsTable = @"CREATE TABLE Products (ProductID NVARCHAR(75) Primary Key, prodActive bit," +
             " ProductName NVARCHAR(75), ProductState NVARCHAR(75), yId int, revision Int, changeDate DateTime," +
@@ -40,7 +40,7 @@ namespace Database
         {
             commonAppData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Yargus\LRP\";
             fullPath = Path.Combine(commonAppData, dbName);
-            conString = @"Data Source = " + fullPath + "; Password = 'yargus'; ";
+            conString = @"Data Source=" + fullPath + ";Version=3;";
         }
         #endregion
 
@@ -56,8 +56,7 @@ namespace Database
         {
             if (!DbExist())
             {
-                SqlCeEngine dbEngine = new SqlCeEngine(conString);
-                dbEngine.CreateDatabase();
+                SQLiteConnection.CreateFile(fullPath);
                 createTables();
             }
         }
@@ -66,27 +65,27 @@ namespace Database
         {
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed)
                 { conn.Open(); }
                 if (!TableExist("Products"))
                 {
-                    using (SqlCeCommand cmd = new SqlCeCommand(createProductsTable, conn))
+                    using (SQLiteCommand cmd = new SQLiteCommand(createProductsTable, conn))
                     { cmd.ExecuteNonQuery(); }
                 }
                 if (!TableExist("RecipeList"))
                 {
-                    using (SqlCeCommand cmd = new SqlCeCommand(createRecipeListTable, conn))
+                    using (SQLiteCommand cmd = new SQLiteCommand(createRecipeListTable, conn))
                     { cmd.ExecuteNonQuery(); }
                 }
                 if (!TableExist("RecipeInfo"))
                 {
-                    using (SqlCeCommand cmd = new SqlCeCommand(createRecipeInfoTable, conn))
+                    using (SQLiteCommand cmd = new SQLiteCommand(createRecipeInfoTable, conn))
                     { cmd.ExecuteNonQuery(); }
                 }
                 if (!TableExist("History"))
                 {
-                    using (SqlCeCommand cmd = new SqlCeCommand(createHistoryTable, conn))
+                    using (SQLiteCommand cmd = new SQLiteCommand(createHistoryTable, conn))
                     { cmd.ExecuteNonQuery(); }
                 }
             }
@@ -111,11 +110,11 @@ namespace Database
                 if (string.IsNullOrWhiteSpace(tableName))
                 { throw new ArgumentException("Invalid table name"); }
 
-                using (SqlCeCommand command = conn.CreateCommand())
+                using (SQLiteCommand command = conn.CreateCommand())
                 {
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT 1 FROM Information_Schema.Tables WHERE TABLE_NAME = @tableName";
-                    command.Parameters.AddWithValue("tableName", tableName);
+                    command.CommandText = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = @tableName";
+                    command.Parameters.AddWithValue("@tableName", tableName);
                     object result = command.ExecuteScalar();
 
                     return result != null;
@@ -131,19 +130,19 @@ namespace Database
         /// </summary>
         public DataTable getAllProds()
         {
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             DataTable dt = new DataTable();
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
                 sql = "Select ProductName, ProductId, ProductState, revision, inRecipe" +
                     " from Products Where prodActive = 1 Order by ProductName asc";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
 
-                using (SqlCeDataAdapter a = new SqlCeDataAdapter(cmd))
+                using (SQLiteDataAdapter a = new SQLiteDataAdapter(cmd))
                 { a.Fill(dt); }
             }
             finally
@@ -156,16 +155,16 @@ namespace Database
         /// </summary>
         public List<string> getAllProdNames()
         {
-            conn = new SqlCeConnection(conString);
+            conn = new SQLiteConnection(conString);
             if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
             List<string> prodNames = new List<string>();
             try
             {
                 string sql = "SELECT ProductName FROM Products";
-                SqlCeCommand command = new SqlCeCommand(sql, conn);
+                SQLiteCommand command = new SQLiteCommand(sql, conn);
 
-                using (SqlCeDataReader dataReader = command.ExecuteReader())
+                using (SQLiteDataReader dataReader = command.ExecuteReader())
                 {
                     while (dataReader.Read())
                     { prodNames.Add(dataReader["ProductName"].ToString()); }
@@ -178,16 +177,16 @@ namespace Database
 
         public List<string> getActiveProductNames()
         {
-            conn = new SqlCeConnection(conString);
+            conn = new SQLiteConnection(conString);
             if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
             List<string> prodNames = new List<string>();
             try
             {
                 string sql = "SELECT ProductName FROM Products Where prodActive =1";
-                SqlCeCommand command = new SqlCeCommand(sql, conn);
+                SQLiteCommand command = new SQLiteCommand(sql, conn);
 
-                using (SqlCeDataReader dataReader = command.ExecuteReader())
+                using (SQLiteDataReader dataReader = command.ExecuteReader())
                 {
                     while (dataReader.Read())
                     { prodNames.Add(dataReader["ProductName"].ToString()); }
@@ -200,16 +199,16 @@ namespace Database
 
         public List<string> getAllProdIds()
         {
-            conn = new SqlCeConnection(conString);
+            conn = new SQLiteConnection(conString);
             if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
             List<string> prodIds = new List<string>();
             try
             {
                 string sql = "SELECT ProductId FROM Products";
-                SqlCeCommand command = new SqlCeCommand(sql, conn);
+                SQLiteCommand command = new SQLiteCommand(sql, conn);
 
-                using (SqlCeDataReader dataReader = command.ExecuteReader())
+                using (SQLiteDataReader dataReader = command.ExecuteReader())
                 {
                     while (dataReader.Read())
                     { prodIds.Add(dataReader["ProductId"].ToString()); }
@@ -229,11 +228,11 @@ namespace Database
             string productId;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT ProductId FROM Products where ProductName = @productName";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@productName", prodName);
                 productId = cmd.ExecuteScalar().ToString();
             }
@@ -248,11 +247,11 @@ namespace Database
             string prodName = "";
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT ProductName FROM Products where yId = @yId and prodActive = 1";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@yId", yId);
                 prodName = cmd.ExecuteScalar().ToString();
             }
@@ -270,11 +269,11 @@ namespace Database
             int id;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT yId FROM Products Order by yId desc";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 id = Convert.ToInt16(cmd.ExecuteScalar()) + 1;
             }
             finally
@@ -288,11 +287,11 @@ namespace Database
             int id;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT yId FROM Products Where ProductId = @prodId";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@prodId", prodId);
                 id = Convert.ToInt16(cmd.ExecuteScalar());
             }
@@ -304,18 +303,18 @@ namespace Database
 
         public void addProduct(string name, string id, string state)
         {
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
 
             int yId = setYId();
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "INSERT INTO Products (ProductID, ProductName, ProductState,yId, prodActive,revision, inRecipe)" +
                     " VALUES (@productid, @productname, @producttype,@yId, 1,0,0)";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@productid", id);
                 cmd.Parameters.AddWithValue("@productname", name);
                 cmd.Parameters.AddWithValue("@producttype", state);
@@ -334,15 +333,15 @@ namespace Database
         {
             int yId = getYId(id);
             bool exists = false;
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "Select * from RecipeInfo Where yId = @yId";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@yId", yId);
                 int rowsReturned = Convert.ToInt32(cmd.ExecuteScalar());
                 if (rowsReturned > 0)
@@ -358,11 +357,11 @@ namespace Database
             int revision;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT revision FROM Products Where yId = @yId Order by revision desc";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@yId", yId);
                 revision = Convert.ToInt16(cmd.ExecuteScalar());
             }
@@ -374,20 +373,20 @@ namespace Database
 
         public DataTable getProdRevisions(int yId)
         {
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             DataTable dt = new DataTable();
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
                 sql = "Select ProductName, ProductId, ProductState, revision, changeDate" +
                     " from Products Where yId= @yId Order by revision desc";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@yId", yId);
 
-                using (SqlCeDataAdapter a = new SqlCeDataAdapter(cmd))
+                using (SQLiteDataAdapter a = new SQLiteDataAdapter(cmd))
                 { a.Fill(dt); }
             }
             finally
@@ -401,28 +400,28 @@ namespace Database
         /// <param name="name"></param><param name="id"></param><param name="state"></param><param name="yId"></param>
         public void editProduct(string name, string id, string state,int yId)
         {
-            SqlCeCommand cmdNew;
+            SQLiteCommand cmdNew;
             string sqlNew;
-            SqlCeCommand cmdUpdate;
+            SQLiteCommand cmdUpdate;
             string sqlUpdate;
             int revision = getProdRevisionNum(yId) +1;
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) 
                 { conn.Open(); }
 
                 sqlUpdate = "UPDATE Products SET prodActive = 0, changeDate = @date "
                     + "where prodActive = 1 and yId = @yId";
-                cmdUpdate = new SqlCeCommand(sqlUpdate, conn);
+                cmdUpdate = new SQLiteCommand(sqlUpdate, conn);
                 cmdUpdate.Parameters.AddWithValue("@date", DateTime.Now);
                 cmdUpdate.Parameters.AddWithValue("@yId", yId);
                 cmdUpdate.ExecuteNonQuery();
 
                 sqlNew = "INSERT INTO Products (ProductID, ProductName, ProductState,yId, prodActive, revision, inRecipe)" +
                     " VALUES (@productid, @productname, @producttype,@yId,1, @revision,1)";
-                cmdNew = new SqlCeCommand(sqlNew, conn);
+                cmdNew = new SQLiteCommand(sqlNew, conn);
                 cmdNew.Parameters.AddWithValue("@productid", id);
                 cmdNew.Parameters.AddWithValue("@productname", name);
                 cmdNew.Parameters.AddWithValue("@producttype", state);
@@ -441,15 +440,15 @@ namespace Database
         public void completeProdDelete(string id)
         {
             int yId = getYId(id);
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "Delete from Products Where yId = @yId";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@yId", yId);
                 cmd.ExecuteScalar();
             }
@@ -459,18 +458,18 @@ namespace Database
         
         public void markProdInactive(int yId)
         { 
-            SqlCeCommand cmdUpdate;
+            SQLiteCommand cmdUpdate;
             string sqlUpdate;
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) 
                 { conn.Open(); }
 
                 sqlUpdate = "UPDATE Products SET prodActive = 0 "
                     + "where prodActive = 1 and yId = @yId";
-                cmdUpdate = new SqlCeCommand(sqlUpdate, conn);
+                cmdUpdate = new SQLiteCommand(sqlUpdate, conn);
                 cmdUpdate.Parameters.AddWithValue("@yId", yId);
                 cmdUpdate.ExecuteNonQuery();
             }
@@ -480,15 +479,15 @@ namespace Database
 
         public List<Product> getRecipeProds(int rId)
         {
-            conn = new SqlCeConnection(conString);
+            conn = new SQLiteConnection(conString);
             if (conn.State == ConnectionState.Closed) { conn.Open(); }
             List<Product> prods = new List<Product>();
             try
             {
                 string sql = "SELECT * FROM RecipeInfo Where rId = @rId";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@rId", rId);
-                using (SqlCeDataReader dataReader = cmd.ExecuteReader())
+                using (SQLiteDataReader dataReader = cmd.ExecuteReader())
                 {
                     while (dataReader.Read())
                     { 
@@ -507,15 +506,15 @@ namespace Database
 
         public List<Product> getTicketProds(int rId)
         {
-            conn = new SqlCeConnection(conString);
+            conn = new SQLiteConnection(conString);
             if (conn.State == ConnectionState.Closed) { conn.Open(); }
             List<Product> prods = new List<Product>();
             try
             {
                 string sql = "SELECT * FROM RecipeInfo Where rId = @rId";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@rId", rId);
-                using (SqlCeDataReader dataReader = cmd.ExecuteReader())
+                using (SQLiteDataReader dataReader = cmd.ExecuteReader())
                 {
                     while (dataReader.Read())
                     {
@@ -540,11 +539,11 @@ namespace Database
             int id;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT rId FROM RecipeList Order by rId desc";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 id = Convert.ToInt16(cmd.ExecuteScalar()) + 1;
             }
             finally
@@ -558,11 +557,11 @@ namespace Database
             int id;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT rId FROM RecipeList Where RecipeName = @recipeName";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@recipeName", recipeName);
                 id = Convert.ToInt16(cmd.ExecuteScalar());
             }
@@ -574,19 +573,19 @@ namespace Database
 
         public DataTable getAllRecipeNames()
         {
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             DataTable dt = new DataTable();
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "Select RecipeName from RecipeList Where recipeActive = 1 Order by RecipeName desc";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
 
-                using (SqlCeDataAdapter a = new SqlCeDataAdapter(cmd))
+                using (SQLiteDataAdapter a = new SQLiteDataAdapter(cmd))
                 { a.Fill(dt); }
             }
             finally
@@ -599,11 +598,11 @@ namespace Database
             string recipeName = "";
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT RecipeName FROM RecipeList where rId = @rId";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@rId", rId);
                 recipeName = cmd.ExecuteScalar().ToString();
             }
@@ -616,15 +615,15 @@ namespace Database
         public bool checkRecipeExists(string name)
         {
             bool exists = false;
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "SELECT COUNT(*) FROM RecipeList where RecipeName = @name";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@name", name);
                 int rowsReturned = Convert.ToInt32(cmd.ExecuteScalar());
                 if (rowsReturned > 0)
@@ -638,18 +637,18 @@ namespace Database
         public void addRecipe(string name, List<int> yIdList, List<float> ratioList)
         {
             int i = 0;
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             int rId = setRecipeId();
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed)
                 { conn.Open(); }
 
                 sql = "INSERT INTO RecipeList (RecipeName, rId, revision, recipeActive, ran)" +
                         " VALUES (@name, @id, 0, 1, 0)";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Id", rId);
                 cmd.Parameters.AddWithValue("@name", name);
                 cmd.ExecuteNonQuery();
@@ -661,14 +660,14 @@ namespace Database
                     float ratio = ratioList[i];
                     sql = "INSERT INTO RecipeInfo (rId, yId, ratio,revision)"+
                         " VALUES (@rId, @yId,@ratio,0)";
-                    cmd = new SqlCeCommand(sql, conn);
+                    cmd = new SQLiteCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@rId", rId);
                     cmd.Parameters.AddWithValue("@yId", id);
                     cmd.Parameters.AddWithValue("@ratio", ratio);
                     cmd.ExecuteNonQuery();
 
                     sql = "UPDATE Products SET inRecipe = 1 where prodActive = 1 and yId = @yId";
-                    cmd = new SqlCeCommand(sql, conn);
+                    cmd = new SQLiteCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@yId", id);
                     cmd.ExecuteNonQuery();
                     i++;
@@ -681,22 +680,22 @@ namespace Database
         public void deleteRecipe(string recipeName)
         {
             int rId = getRid(recipeName);
-            SqlCeCommand cmdInfo;
+            SQLiteCommand cmdInfo;
             string sqlInfo;
-            SqlCeCommand cmdList;
+            SQLiteCommand cmdList;
             string sqlList;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sqlList= "Delete from RecipeInfo Where recipeId = @rId";
-                cmdList= new SqlCeCommand(sqlList, conn);
+                cmdList= new SQLiteCommand(sqlList, conn);
                 cmdList.Parameters.AddWithValue("@rId", rId);
                 cmdList.ExecuteScalar();
 
                 sqlInfo = "Delete from RecipeList Where recipeId = @rId";
-                cmdInfo = new SqlCeCommand(sqlInfo, conn);
+                cmdInfo = new SQLiteCommand(sqlInfo, conn);
                 cmdInfo.Parameters.AddWithValue("@rId", rId);
                 cmdInfo.ExecuteScalar();
             }
@@ -706,7 +705,7 @@ namespace Database
 
         public List<int> getRecipeForProd(int yId)
         {
-            conn = new SqlCeConnection(conString);
+            conn = new SQLiteConnection(conString);
             if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
             List<int> rIds = new List<int>();
@@ -714,17 +713,17 @@ namespace Database
             try
             {
                 string sql = "SELECT rId FROM RecipeList Where recipeActive =1";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
-                using (SqlCeDataReader dR = cmd.ExecuteReader())
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                using (SQLiteDataReader dR = cmd.ExecuteReader())
                 {
                     while (dR.Read())
                     { rIds.Add(Convert.ToInt16(dR["rId"])); }
                 }
 
                 sql = "SELECT rId FROM RecipeInfo Where yId = @yId";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@yId", yId);
-                using (SqlCeDataReader dataReader = cmd.ExecuteReader())
+                using (SQLiteDataReader dataReader = cmd.ExecuteReader())
                 {
                     while (dataReader.Read())
                     {
@@ -742,15 +741,15 @@ namespace Database
         public bool recipeRan(int rId)
         {
             bool exists = false;
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "Select ran from RecipeList Where rId = @rId";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@rId", rId);
                 int rowsReturned = Convert.ToInt32(cmd.ExecuteScalar());
                 if (rowsReturned > 0)
@@ -763,18 +762,18 @@ namespace Database
 
         public void markRecipeInactive(int rId)
         {
-            SqlCeCommand cmdUpdate;
+            SQLiteCommand cmdUpdate;
             string sqlUpdate;
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed)
                 { conn.Open(); }
 
                 sqlUpdate = "UPDATE RecipeList SET recipeActive = 0 "
                     + "where recipeActive = 1 and rId = @rId";
-                cmdUpdate = new SqlCeCommand(sqlUpdate, conn);
+                cmdUpdate = new SQLiteCommand(sqlUpdate, conn);
                 cmdUpdate.Parameters.AddWithValue("@rId", rId);
                 cmdUpdate.ExecuteNonQuery();
             }
@@ -788,21 +787,21 @@ namespace Database
         /// <param name="prodId"></param>
         public void completeRecipeDelete(int rId)
         {
-            SqlCeCommand cmdList;
+            SQLiteCommand cmdList;
             string sqlList;
-            SqlCeCommand cmdInfo;
+            SQLiteCommand cmdInfo;
             string sqlInfo;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sqlList = "Delete from RecipeList Where rId = @rId";
-                cmdList = new SqlCeCommand(sqlList, conn);
+                cmdList = new SQLiteCommand(sqlList, conn);
                 cmdList.Parameters.AddWithValue("@rId", rId);
                 cmdList.ExecuteScalar();
                 sqlInfo = "Delete from RecipeInfo Where rId = @rId";
-                cmdInfo = new SqlCeCommand(sqlInfo, conn);
+                cmdInfo = new SQLiteCommand(sqlInfo, conn);
                 cmdInfo.Parameters.AddWithValue("@rId", rId);
                 cmdInfo.ExecuteScalar();
             }
@@ -815,11 +814,11 @@ namespace Database
             int revision;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 string sql = "SELECT revision FROM RecipeList Where rId = @rId Order by revision desc";
-                SqlCeCommand cmd = new SqlCeCommand(sql, conn);
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@rId", rId);
                 revision = Convert.ToInt16(cmd.ExecuteScalar());
             }
@@ -835,26 +834,26 @@ namespace Database
         /// <param name="name"></param><param name="id"></param><param name="state"></param><param name="yId"></param>
         public void editRecipeList(string name, int rId)
         {
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             int revision = getRecipeRevisionNum(rId) + 1;
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed)
                 { conn.Open(); }
 
                 sql= "UPDATE RecipeInfo SET recipeActive = 0, changeDate = @date "
                     + "where recipeActive = 1 and recipeId = @rId";
-                cmd= new SqlCeCommand(sql, conn);
+                cmd= new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@date", DateTime.Now);
                 cmd.Parameters.AddWithValue("@rId", rId);
                 cmd.ExecuteNonQuery();
 
                 sql = "INSERT INTO RecipeList (RecipeName,recipeId, revision,recipeActive,ran)" +
                     " VALUES (@name, @rId, @revision,1, 1)";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@name", name);
                 cmd.Parameters.AddWithValue("@rId", rId);
                 cmd.Parameters.AddWithValue("@revision", revision);
@@ -867,12 +866,12 @@ namespace Database
         public void editRecipeInfo(int rId, List<int> yIdList, List<float> ratioList)
         {
             int i = 0;
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             int revision = getRecipeRevisionNum(rId);
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed)
                 { conn.Open(); }
                 
@@ -883,7 +882,7 @@ namespace Database
                     float ratio = ratioList[i];
                     sql = "INSERT INTO RecipeInfo (recipeId, yId, ratio,revision)" +
                         " VALUES (@rId, @yId,@ratio,@revision)";
-                    cmd = new SqlCeCommand(sql, conn);
+                    cmd = new SQLiteCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@rId", rId);
                     cmd.Parameters.AddWithValue("@yId", id);
                     cmd.Parameters.AddWithValue("@ratio", ratio);
@@ -891,7 +890,7 @@ namespace Database
                     cmd.ExecuteNonQuery();
 
                     sql = "UPDATE Products SET inRecipe = 1 where prodActive = 1 and yId = @yId";
-                    cmd = new SqlCeCommand(sql, conn);
+                    cmd = new SQLiteCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@yId", id);
                     cmd.ExecuteNonQuery();
                     i++;
@@ -907,15 +906,15 @@ namespace Database
         {
             DataTable results = new DataTable();
             string sql = "";
-            SqlCeCommand cmd = new SqlCeCommand();
+            SQLiteCommand cmd = new SQLiteCommand();
             sql = "Select * from History Order by RanDate desc";
-            cmd = new SqlCeCommand(sql, conn);
+            cmd = new SQLiteCommand(sql, conn);
 
             DataTable dt = setupHistoryDt();
             try
             {
                 conn.Open();
-                using (SqlCeDataAdapter a = new SqlCeDataAdapter(cmd))
+                using (SQLiteDataAdapter a = new SQLiteDataAdapter(cmd))
                 { a.Fill(results); }
                 dt = fillInHistoryDt(results, dt);
             }
@@ -1040,24 +1039,24 @@ namespace Database
 
         public void recordRun(int rId, float ranWeight, DateTime date)
         {
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
 
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "INSERT INTO History (rId, RanWeight, RanDate)"+
                     " VALUES (@rId, @weight, @date)";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@rId", rId);
                 cmd.Parameters.AddWithValue("@weight", ranWeight);
                 cmd.Parameters.AddWithValue("@date", date);
                 cmd.ExecuteNonQuery();
 
                 sql= "UPDATE RecipeList SET ran = 1 where recipeActive = 1 and rId = @rId";
-                cmd= new SqlCeCommand(sql, conn);
+                cmd= new SQLiteCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@rId", rId);
                 cmd.ExecuteNonQuery();
             }
@@ -1067,20 +1066,20 @@ namespace Database
 
         public void deleteAllHistory()
         {
-            SqlCeCommand cmd;
+            SQLiteCommand cmd;
             string sql;
             try
             {
-                conn = new SqlCeConnection(conString);
+                conn = new SQLiteConnection(conString);
                 if (conn.State == ConnectionState.Closed) { conn.Open(); }
 
                 sql = "Delete from History";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.ExecuteScalar();
 
                 sql = "UPDATE RecipeList SET ran = 0 "
                     + "where recipeActive = 1";
-                cmd = new SqlCeCommand(sql, conn);
+                cmd = new SQLiteCommand(sql, conn);
                 cmd.ExecuteNonQuery();
             }
             finally

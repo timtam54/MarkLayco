@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layco 4.2 — Software Suite</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-2: #1e293b;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 50% -200px, #1e293b 0%, transparent 60%),
+        linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 64px 24px 48px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #cbd5e1;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: inline-block;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 48px 40px;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.05),
+        0 20px 40px -16px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      margin: 0 0 32px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #f1f5f9;
+      color: #334155;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background 120ms ease, transform 120ms ease;
+    }
+
+    .download:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .download svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .sub-download {
+      display: block;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 40px 0 28px;
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 32px;
+    }
+
+    .details dt {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .details dd {
+      margin: 0 0 16px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .footer {
+      margin-top: 32px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    @media (max-width: 560px) {
+      .page { padding: 32px 16px; }
+      .card { padding: 32px 24px; }
+      h1 { font-size: 28px; }
+      .details { grid-template-columns: 1fr; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Layco Software</span>
+    </div>
+
+    <section class="card">
+      <h1>Layco 4.2</h1>
+      <p class="subtitle">Standalone Windows build with login bypass and embedded SQLite database.</p>
+
+      <div class="meta">
+        <span class="chip"><span class="chip-dot"></span> Stable release</span>
+        <span class="chip">Windows 10 / 11</span>
+        <span class="chip">.NET Framework 4.7.2</span>
+      </div>
+
+      <a class="download" href="LaycoSoftwareSuiteSetup.msi" download>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Download installer (.msi)
+      </a>
+      <span class="sub-download">Run the MSI as administrator. The app installs to <code>C:\Program Files\Layco Software Suite</code>.</span>
+
+      <div class="divider"></div>
+
+      <dl class="details">
+        <div>
+          <dt>Version</dt>
+          <dd>4.2.0</dd>
+        </div>
+        <div>
+          <dt>Database</dt>
+          <dd>SQLite — created on first run at <code>C:\ProgramData\AGI\Inventory\YSS.db</code></dd>
+        </div>
+        <div>
+          <dt>Authentication</dt>
+          <dd>Login bypassed — auto-logs in as admin staff.</dd>
+        </div>
+        <div>
+          <dt>Requirements</dt>
+          <dd>Windows 10 or 11 with .NET Framework 4.7.2 (included by default).</dd>
+        </div>
+      </dl>
+    </section>
+
+    <p class="footer">&copy; AGI. Layco Software Suite 4.2.</p>
+  </main>
+</body>
+</html>

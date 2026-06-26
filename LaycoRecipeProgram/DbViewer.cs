@@ -27,7 +27,7 @@ namespace LaycoRecipeProgram
             InitializeComponent();
 
             DirectoryInfo dirInfo = new DirectoryInfo(LRP.Default.AppData +"\\Backup");
-            FileInfo[] savedDbList = dirInfo.GetFiles("*.sdf");
+            FileInfo[] savedDbList = dirInfo.GetFiles("*.db");
             List<string> dbList = new List<string>();
             List<string> rlbTicketList = new List<string>();
 
@@ -55,7 +55,7 @@ namespace LaycoRecipeProgram
 
         private void cbxDb_SelectedIndexChanged(object sender, EventArgs e)
         { 
-            db = new DatabaseViewer(LRP.Default.AppData +"\\Backup\\" + cbxDb.SelectedItem.ToString() +".sdf");
+            db = new DatabaseViewer(LRP.Default.AppData +"\\Backup\\" + cbxDb.SelectedItem.ToString() +".db");
             lblFrom.Text = db.getFromDate().ToString();
             lblTo.Text = db.getToDate().ToString();
         }

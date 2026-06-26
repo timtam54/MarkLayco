@@ -157,7 +157,7 @@ namespace Settings
                 LRP.Default.LogPath = appData + @"\LogFile";
                 LRP.Default.ErrorPath = appData + @"\ErrorFile";
                 LRP.Default.AppData = appData;
-                LRP.Default.DBPath = appData + @"\LRP.sdf";
+                LRP.Default.DBPath = appData + @"\LRP.db";
 
                 if (rbtnKgs.Checked)
                 { LRP.Default.useMetric = true; }
