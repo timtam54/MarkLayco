@@ -1,0 +1,18 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["*.msi"]
+  },
+  "mimeTypes": {
+    ".msi": "application/x-msi"
+  },
+  "routes": [
+    {
+      "route": "/LaycoRecipeProgramSetup.msi",
+      "headers": {
+        "content-disposition": "attachment; filename=LaycoRecipeProgramSetup.msi",
+        "cache-control": "no-cache"
+      }
+    }
+  ]
+}
