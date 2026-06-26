@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <!--
+    Installer for the Layco Recipe Program (MarkLayco42).
+    Harvests the entire Release build output of the LaycoRecipeProgram startup
+    project (exe + all dependency DLLs + native SQLite.Interop.dll under x86/x64)
+    and installs it under Program Files (x86)\Layco Recipe Program.
+  -->
+  <Package
+      Name="Layco Recipe Program"
+      Manufacturer="Yargus"
+      Version="1.0.0.0"
+      UpgradeCode="D8EB3D95-C070-4F5E-8763-EF9B6E2F9995"
+      Scope="perMachine"
+      Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Install location: %ProgramFiles(x86)%\Layco Recipe Program -->
+    <StandardDirectory Id="ProgramFilesFolder">
+      <Directory Id="INSTALLFOLDER" Name="Layco Recipe Program" />
+    </StandardDirectory>
+
+    <!-- Start Menu shortcut -->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppProgramMenuDir" Name="Layco Recipe Program" />
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="Layco Recipe Program" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="AppShortcut" />
+    </Feature>
+  </Package>
+
+  <!-- All files from the Release output (exe, config, DLLs, native interop),
+       preserving the x86/x64 subfolders. -->
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(var.SourceDir)\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Start Menu shortcut to the main executable -->
+  <Fragment>
+    <Component Id="AppShortcut" Directory="AppProgramMenuDir" Guid="*">
+      <Shortcut Id="StartMenuShortcut"
+                Name="Layco Recipe Program"
+                Target="[INSTALLFOLDER]LaycoRecipeProgram.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveAppProgramMenuDir" Directory="AppProgramMenuDir" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Yargus\LaycoRecipeProgram"
+                     Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+</Wix>

@@ -1,0 +1,10 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <OutputName>LaycoRecipeProgramSetup</OutputName>
+    <OutputType>Package</OutputType>
+    <!-- App startup exe is x86, so the installer is x86 and installs to Program Files (x86) -->
+    <InstallerPlatform>x86</InstallerPlatform>
+    <!-- Folder that the installer harvests: the Release build output of the startup project -->
+    <DefineConstants>SourceDir=$(MSBuildProjectDirectory)\..\LaycoRecipeProgram\bin\Release</DefineConstants>
+  </PropertyGroup>
+</Project>
