@@ -649,7 +649,7 @@ namespace Database
                 sql = "INSERT INTO RecipeList (RecipeName, rId, revision, recipeActive, ran)" +
                         " VALUES (@name, @id, 0, 1, 0)";
                 cmd = new SQLiteCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Id", rId);
+                cmd.Parameters.AddWithValue("@id", rId);
                 cmd.Parameters.AddWithValue("@name", name);
                 cmd.ExecuteNonQuery();
                                 
