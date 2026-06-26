@@ -7,4 +7,8 @@
     <!-- Folder that the installer harvests: the Release build output of the startup project -->
     <DefineConstants>SourceDir=$(MSBuildProjectDirectory)\..\LaycoRecipeProgram\bin\Release</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Standard WiX setup wizard dialogs (Welcome / InstallDir / Progress / Finish) -->
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+  </ItemGroup>
 </Project>

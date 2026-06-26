@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
 
   <!--
     Installer for the Layco Recipe Program (MarkLayco42).
@@ -18,6 +19,12 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
+    <!-- Show a real setup wizard (Welcome, install folder, progress, Finish) instead
+         of installing silently. WIXUI_INSTALLDIR tells it which dir is editable. -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <ui:WixUI Id="WixUI_InstallDir" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
     <!-- Install location: %ProgramFiles(x86)%\Layco Recipe Program -->
     <StandardDirectory Id="ProgramFilesFolder">
       <Directory Id="INSTALLFOLDER" Name="Layco Recipe Program" />
@@ -28,9 +35,13 @@
       <Directory Id="AppProgramMenuDir" Name="Layco Recipe Program" />
     </StandardDirectory>
 
+    <!-- Desktop (for the desktop shortcut) -->
+    <StandardDirectory Id="DesktopFolder" />
+
     <Feature Id="MainFeature" Title="Layco Recipe Program" Level="1">
       <ComponentGroupRef Id="AppFiles" />
       <ComponentRef Id="AppShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
     </Feature>
   </Package>
 
@@ -52,6 +63,18 @@
       <RemoveFolder Id="RemoveAppProgramMenuDir" Directory="AppProgramMenuDir" On="uninstall" />
       <RegistryValue Root="HKCU" Key="Software\Yargus\LaycoRecipeProgram"
                      Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+  <!-- Desktop shortcut to the main executable -->
+  <Fragment>
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="*">
+      <Shortcut Id="DesktopShortcutExe"
+                Name="Layco Recipe Program"
+                Target="[INSTALLFOLDER]LaycoRecipeProgram.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="Software\Yargus\LaycoRecipeProgram"
+                     Name="desktop" Type="integer" Value="1" KeyPath="yes" />
     </Component>
   </Fragment>
 
