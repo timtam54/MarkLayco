@@ -1,4 +1,4 @@
-# Build & Deploy — Layco Software Suite
+# Build & Deploy — 
 
 Step-by-step guide for building the MSI installer on Windows and publishing the download page.
 
